@@ -3,18 +3,27 @@
 const flock = [];
 
 function setup() {
-  createCanvas(640, 360);
+  createCanvas(windowWidth, windowHeight);
   
-  for(let i = 0; i < 100; i++)  {
-    flock.push(new Boid());
+  for(let i = 0; i < 250; i++)  {
+    flock.push(new Boid(random(windowWidth), random(windowHeight)));
   }
 }
 
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+}
+
+// Add a new boid into the System
+function mouseDragged() {
+  flock.push(new Boid(mouseX, mouseY));
+}
+
 function draw() {
-  background(51);
+  background(0, 20);
 
   for (let boid of flock) {
     boid.update(flock);
-    boid.show();
+    boid.draw();
   }
 }
