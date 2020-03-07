@@ -7,6 +7,15 @@ class Boid {
         this.size = 3.0;
         this.maxSpeed = random(2, 7);
         this.maxSteeringForce = random(0.02, 0.40);
+        this.repulsor = null;
+    }
+
+    setRepulsor(x, y) {
+        this.repulsor = createVector(x, y);
+    }
+
+    clearRepulsor() {
+        this.repulsor = null;
     }
 
     draw() {
@@ -31,11 +40,13 @@ class Boid {
         let alignment = this.align(boids); 
         let separation = this.separate(boids);
         let cohesion = this.cohesion(boids);
+        let repulsion = this.repulse();
         
         let acceleration = createVector();
         acceleration.add(alignment);
         acceleration.add(separation);
         acceleration.add(cohesion);
+        acceleration.add(repulsion);
 
         this.velocity.add(acceleration);
         this.velocity.limit(this.maxSpeed);
@@ -49,6 +60,25 @@ class Boid {
         if (this.position.y < -this.size) this.position.y = height + this.size;
         if (this.position.x > width + this.size) this.position.x = -this.size;
         if (this.position.y > height + this.size) this.position.y = -this.size;
+    }
+
+    repulse() {
+        if (!this.repulsor)
+            return createVector();
+
+        let perceptionRadius = 200;
+
+        let distanceToRepulsor = p5.Vector.dist(this.position, this.repulsor)
+        if (distanceToRepulsor <= 0 || distanceToRepulsor > perceptionRadius) 
+            return createVector();
+            
+        let repulsionForce = p5.Vector.sub(this.position, this.repulsor);
+        repulsionForce.div(distanceToRepulsor); // Inversely scale with distance
+        repulsionForce.mult(this.maxSpeed);
+        repulsionForce.sub(this.velocity);
+        repulsionForce.limit(0.7);
+
+        return repulsionForce;
     }
 
     align(boids) { 

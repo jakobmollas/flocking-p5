@@ -17,7 +17,8 @@ function windowResized() {
 }
 
 function mouseDragged() {
-  flock.push(new Boid(mouseX, mouseY));
+  if (mouseButton === LEFT)
+    flock.push(new Boid(mouseX, mouseY));
 }
 
 function keyTyped() {
@@ -47,7 +48,13 @@ function draw() {
   background(0, 10);
 
   for (let boid of flock) {
-    boid.update(flock);
+    let rightMousePressed = mouseIsPressed && mouseButton === RIGHT;
+    if (rightMousePressed)
+      boid.setRepulsor(mouseX, mouseY);
+    else 
+      boid.clearRepulsor();
+    
+    boid.update(flock, );
     boid.draw();
   }
 }
