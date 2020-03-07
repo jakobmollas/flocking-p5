@@ -1,12 +1,14 @@
 'use strict'
 
 let flock = [];
+let obstacles = [];
 let animate = true;
 let showDiagnostics = true;
 let showQuadtree = false;
 let showQuadTester = false;
+let showObstacles = false;
 let quadTreeSize = 32;
-let boidCount = 300;
+let boidCount = 250;
 
 function setup() {
   var canvas = createCanvas(windowWidth, windowHeight);
@@ -15,14 +17,21 @@ function setup() {
   textFont('monospace');
 
   initializeBoids();
+  initializeObstacles();
 }
 
 function initializeBoids() {
   flock = [];
-
+  
   for(let i = 0; i < boidCount; i++)  {
     flock.push(new Boid(random(windowWidth), random(windowHeight)));
   }
+}
+
+function initializeObstacles() {
+  obstacles = [];
+  obstacles.push(new Obstacle(random(windowWidth), random(windowHeight), random(200, 500)));
+  obstacles.push(new Obstacle(random(windowWidth), random(windowHeight), random(200, 500)));
 }
 
 function windowResized() {
@@ -30,9 +39,10 @@ function windowResized() {
 }
 
 function mouseDragged() {
-  if (mouseButton === LEFT)
+  if (mouseButton === LEFT) {
     flock.push(new Boid(mouseX, mouseY));
     boidCount++;
+  }
 }
 
 function keyTyped() {
@@ -44,6 +54,10 @@ function keyTyped() {
 
     case "d": 
       showDiagnostics = !showDiagnostics;
+      break;
+
+    case "o": 
+      showObstacles = !showObstacles;
       break;
 
     case "t": 
@@ -86,6 +100,7 @@ function keyPressed() {
   }
 }
 
+// Main update loop
 function draw() {
   if (showDiagnostics)
     drawDiagnostics();
@@ -93,46 +108,67 @@ function draw() {
   if (!animate)
     return;
 
-  background(0, 10);
+  // Fade background to black
+  background(0, 20);
 
-  let qtBoundary = new Rectangle(windowWidth / 2, windowHeight / 2, windowWidth / 2, windowHeight / 2);
-  let qt = new QuadTree(qtBoundary, quadTreeSize);
-
-  for (let boid of flock)
-    qt.insert(boid.position.x, boid.position.y, boid);
+  let quadTree = createBoidQuadTree(flock);
+  updateObstacles();
 
   if (showQuadtree)
-    qt.draw();
+    quadTree.draw();
 
+  if (showObstacles)
+    drawObstacles();
+  
   for (let boid of flock) {
-    adjustRepulsor(boid);
-    boid.update(qt);
+    boid.update(quadTree, obstacles);
     boid.draw();
   }
 
-  if (showQuadTester) {
-    noFill();
-    stroke(255);
-    strokeWeight(1);
-    circle(mouseX, mouseY, 200);
+  if (showQuadTester) 
+    drawQuadTester(quadTree);
+}
 
-    strokeWeight(3);
-    let searchArea = new CircleArea(mouseX, mouseY, 100);
-    let matchedPoints = qt.query(searchArea);
-    
-    for (let match of matchedPoints) {
-      point(match.x, match.y);
-    }
+function createBoidQuadTree(boids) {
+  let qtBoundary = new Rectangle(windowWidth / 2, windowHeight / 2, windowWidth / 2, windowHeight / 2);
+  let qt = new QuadTree(qtBoundary, quadTreeSize);
+
+  for (let boid of boids)
+    qt.insert(boid.position.x, boid.position.y, boid);
+
+  return qt;
+}
+
+
+function drawQuadTester(quadTree) {
+  noFill();
+  stroke(255);
+  strokeWeight(1);
+  circle(mouseX, mouseY, 200);
+
+  strokeWeight(10);
+  let searchArea = new CircleArea(mouseX, mouseY, 100);
+  let matchedPoints = quadTree.query(searchArea);
+  
+  for (let match of matchedPoints) {
+    point(match.x, match.y);
   }
 }
 
-function adjustRepulsor(boid) {
-  let rightMousePressed = mouseIsPressed && mouseButton === RIGHT;
+function updateObstacles() {
+    let rightMousePressed = mouseIsPressed && mouseButton === RIGHT;
+    if (rightMousePressed) {
+      obstacles[0].position.x = mouseX;
+      obstacles[0].position.y = mouseY;
+    }
 
-  if (rightMousePressed)
-    boid.setRepulsor(mouseX, mouseY);
-  else 
-    boid.clearRepulsor();
+    for (let obstacle of obstacles)
+      obstacle.update();
+}
+
+function drawObstacles() {
+  for (let obstacle of obstacles)
+    obstacle.draw();
 }
 
 function drawDiagnostics() {

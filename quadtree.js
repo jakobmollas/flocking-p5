@@ -77,9 +77,12 @@ class QuadTree {
     }
 
     draw() {
+        push();
+        
         stroke(255);
         noFill();
         rectMode(RADIUS);
+        strokeWeight(1);
         rect(this.boundary.x, this.boundary.y, this.boundary.w, this.boundary.h);
         if (this.isDivided) {
             this.northEast.draw();
@@ -87,6 +90,8 @@ class QuadTree {
             this.southEast.draw();
             this.southWest.draw();
         }
+        
+        pop();
     }
 
     insert(x, y, userData) {

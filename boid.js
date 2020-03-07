@@ -7,28 +7,22 @@ class Boid {
         this.size = 3.0;
         this.maxSpeed = random(2, 7);
         this.maxSteeringForce = random(0.02, 0.40);
-        this.repulsor = null;
-    }
-
-    setRepulsor(x, y) {
-        this.repulsor = createVector(x, y);
-    }
-
-    clearRepulsor() {
-        this.repulsor = null;
+        this.maxObstacleForce = 0.25;
+        this.setReductionFactor = 4;
     }
 
     draw() {
         push();
 
+        noSmooth();
         colorMode(HSB, 100);
         
         let normalizedHeading = (this.velocity.heading() + PI) / (2 * PI);
         let normalizedSpeed = this.velocity.mag() / this.maxSpeed;
-        //fill(100 * normalizedHeading, 1, 75 * normalizedSpeed);
+        fill(100 * normalizedHeading, 0, 100 * normalizedSpeed);
         stroke(100 * normalizedHeading, 100, 100, 100 * normalizedSpeed);
         //stroke(100 * normalizedHeading, 100, 100 * normalizedSpeed);
-        strokeWeight(3);
+        strokeWeight(2.5);
 
         // Draw a triangle rotated in the direction of velocity
         translate(this.position.x, this.position.y);
@@ -38,17 +32,17 @@ class Boid {
         pop();
     }
 
-    update(qtBoids) {
+    update(qtBoids, obstacles) {
         let alignment = this.align(qtBoids); 
         let separation = this.separate(qtBoids);
         let cohesion = this.cohesion(qtBoids);
-        let repulsion = this.repulse();
-        
+        let avoidance = this.avoidObstacles(obstacles);
+
         let acceleration = createVector();
         acceleration.add(alignment);
         acceleration.add(separation);
         acceleration.add(cohesion);
-        acceleration.add(repulsion);
+        acceleration.add(avoidance);
 
         this.velocity.add(acceleration);
         this.velocity.limit(this.maxSpeed);
@@ -69,32 +63,44 @@ class Boid {
             this.position.y = -this.size;
     }
 
-    repulse() {
-        if (!this.repulsor)
+    avoidObstacles(obstacles) {
+        if (!obstacles)
             return createVector();
 
-        let perceptionRadius = 200;
+        let steeringInfluence = createVector(0, 0);
+        let count = 0;
 
-        let distanceToRepulsor = p5.Vector.dist(this.position, this.repulsor)
-        if (distanceToRepulsor <= 0 || distanceToRepulsor > perceptionRadius) 
-            return createVector();
+        for (var obstacle of obstacles) {
+            let distanceToObstacle = p5.Vector.dist(this.position, obstacle.position)
+            if (distanceToObstacle <= 0 || distanceToObstacle > obstacle.radius) 
+                continue;
             
-        let repulsionForce = p5.Vector.sub(this.position, this.repulsor);
-        repulsionForce.div(distanceToRepulsor); // Inversely scale with distance
-        repulsionForce.mult(this.maxSpeed);
-        repulsionForce.sub(this.velocity);
-        repulsionForce.limit(0.7);
+            let repulsionForce = p5.Vector.sub(this.position, obstacle.position);
+            repulsionForce.normalize();
+            repulsionForce.div(distanceToObstacle); // Inversely scale with distance
+            steeringInfluence.add(repulsionForce);
+            count++;
+        }
 
-        return repulsionForce;
+        if (count > 0) {
+            steeringInfluence.div(count);
+
+            // Reynolds: Steering = Desired - Velocity
+            steeringInfluence.normalize();
+            steeringInfluence.mult(this.maxSpeed);
+            steeringInfluence.sub(this.velocity);
+            steeringInfluence.limit(this.maxObstacleForce);
+        }
+
+        return steeringInfluence;
     }
 
     align(qtBoids) { 
         let perceptionRadius = 200;
-        let reductionFactor = 4;
         let steeringInfluence = createVector();
         let count = 0;
 
-        let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius, reductionFactor);
+        let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius);
         
         for (let point of matchedPoints) {
             let boid = point.userData;
@@ -127,11 +133,10 @@ class Boid {
     // Method checks for nearby boids and steers away
     separate(qtBoids) {
         let perceptionRadius = 25.0;
-        let reductionFactor = 4;
         let steeringInfluence = createVector(0, 0);
         let count = 0;
 
-        let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius, reductionFactor);
+        let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius);
 
         for (let point of matchedPoints) {
             let boid = point.userData;
@@ -163,11 +168,10 @@ class Boid {
     // calculate steering vector towards us
     cohesion(qtBoids) {
         let perceptionRadius = 400;
-        let reductionFactor = 4;
         let allLocations = createVector(0, 0);
         let count = 0;
 
-        let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius, reductionFactor);
+        let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius);
         
         for (let point of matchedPoints) {
             let boid = point.userData;
@@ -196,10 +200,10 @@ class Boid {
         return createVector(0, 0);
     }
 
-    getReducedAreaMatch(qtBoids, searchRadius, takeOneInEvery) {
+    getReducedAreaMatch(qtBoids, searchRadius) {
         let searchArea = new CircleArea(this.position.x, this.position.y, searchRadius);
         let matchedPoints = qtBoids.query(searchArea);
-        let reducedSet = matchedPoints.filter((n, i) => i % takeOneInEvery === 1);
+        let reducedSet = matchedPoints.filter((n, i) => i % this.setReductionFactor === 0);
         return reducedSet;
     }
 }
