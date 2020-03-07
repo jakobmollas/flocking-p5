@@ -16,6 +16,7 @@ class Obstacle {
         push();
         noFill();
         stroke(255);
+        strokeWeight(1);
         circle(this.position.x, this.position.y, this.radius * 2);
         pop();
     }

@@ -1,14 +1,21 @@
 'use strict'
 
+class Settings {
+  constructor() {
+    this.animate = true;
+    this.showDiagnostics = true;
+    this.showQuadtree = false;
+    this.showQuadTester = false;
+    this.showObstacles = false;
+    this.quadTreeSize = 32;
+    this.boidCount = 250;
+  }
+}
+
 let flock = [];
 let obstacles = [];
-let animate = true;
-let showDiagnostics = true;
-let showQuadtree = false;
-let showQuadTester = false;
-let showObstacles = false;
-let quadTreeSize = 32;
-let boidCount = 250;
+let gui = null;
+let settings = new Settings();
 
 function setup() {
   var canvas = createCanvas(windowWidth, windowHeight);
@@ -18,12 +25,25 @@ function setup() {
 
   initializeBoids();
   initializeObstacles();
+  initializeGuiControls();
+}
+
+function initializeGuiControls() {
+  gui = new dat.GUI()
+  gui.add(settings, 'animate');
+  gui.add(settings, 'showDiagnostics');
+  gui.add(settings, 'showQuadtree');
+  gui.add(settings, 'showQuadTester');
+  gui.add(settings, 'showObstacles');
+  gui.add(settings, 'quadTreeSize', 1, 1000);
+  var boidCount = gui.add(settings, 'boidCount', 1, 1000);
+  boidCount.onFinishChange(n => initializeBoids());
 }
 
 function initializeBoids() {
   flock = [];
   
-  for(let i = 0; i < boidCount; i++)  {
+  for(let i = 0; i < settings.boidCount; i++)  {
     flock.push(new Boid(random(windowWidth), random(windowHeight)));
   }
 }
@@ -41,31 +61,34 @@ function windowResized() {
 function mouseDragged() {
   if (mouseButton === LEFT) {
     flock.push(new Boid(mouseX, mouseY));
-    boidCount++;
+    settings.boidCount++;
   }
 }
 
 function keyTyped() {
   switch (key) {
     case "a": 
-      animate = !animate;
-      print(animate ? "Running" : "Paused");
+      settings.animate = !settings.animate;
       break;
 
     case "d": 
-      showDiagnostics = !showDiagnostics;
+      settings.showDiagnostics = !settings.showDiagnostics;
       break;
 
     case "o": 
-      showObstacles = !showObstacles;
+      settings.showObstacles = !settings.showObstacles;
       break;
 
     case "t": 
-      showQuadTester = !showQuadTester;
+      settings.showQuadTester = !settings.showQuadTester;
       break;
     
     case "q": 
-      showQuadtree = !showQuadtree;
+      settings.showQuadtree = !settings.showQuadtree;
+      break;
+
+    case "h": 
+      gui.closed ? gui.open() : gui.close();
       break;
 
     default:
@@ -77,23 +100,23 @@ function keyTyped() {
 function keyPressed() {
   switch (keyCode) {
     case RIGHT_ARROW: 
-      if (quadTreeSize < 1024)
-        quadTreeSize *= 2;
+      if (settings.quadTreeSize < 1024)
+        settings.quadTreeSize *= 2;
       break;
 
     case LEFT_ARROW: 
-      if (quadTreeSize > 1)
-        quadTreeSize /= 2;
+      if (settings.quadTreeSize > 1)
+        settings.quadTreeSize /= 2;
       break;
 
       case UP_ARROW: 
-      boidCount += 50;
+      settings.boidCount += 50;
       initializeBoids();
       break;
 
     case DOWN_ARROW: 
-      if (boidCount > 50) {
-        boidCount -= 50;
+      if (settings.boidCount > 50) {
+        settings.boidCount -= 50;
         initializeBoids();
       }
       break;
@@ -102,10 +125,12 @@ function keyPressed() {
 
 // Main update loop
 function draw() {
-  if (showDiagnostics)
+  updateControls();
+
+  if (settings.showDiagnostics)
     drawDiagnostics();
 
-  if (!animate)
+  if (!settings.animate)
     return;
 
   // Fade background to black
@@ -114,10 +139,10 @@ function draw() {
   let quadTree = createBoidQuadTree(flock);
   updateObstacles();
 
-  if (showQuadtree)
+  if (settings.showQuadtree)
     quadTree.draw();
 
-  if (showObstacles)
+  if (settings.showObstacles)
     drawObstacles();
   
   for (let boid of flock) {
@@ -125,20 +150,26 @@ function draw() {
     boid.draw();
   }
 
-  if (showQuadTester) 
+  if (settings.showQuadTester) 
     drawQuadTester(quadTree);
+}
+
+function updateControls() {
+  // Iterate over all controllers
+  for (var i in gui.__controllers) {
+    gui.__controllers[i].updateDisplay();
+  }
 }
 
 function createBoidQuadTree(boids) {
   let qtBoundary = new Rectangle(windowWidth / 2, windowHeight / 2, windowWidth / 2, windowHeight / 2);
-  let qt = new QuadTree(qtBoundary, quadTreeSize);
+  let qt = new QuadTree(qtBoundary, settings.quadTreeSize);
 
   for (let boid of boids)
     qt.insert(boid.position.x, boid.position.y, boid);
 
   return qt;
 }
-
 
 function drawQuadTester(quadTree) {
   noFill();
@@ -185,5 +216,5 @@ function drawDiagnostics() {
   let fps = frameRate();
   text("FPS:     " + fps.toFixed(), 10, 20);
   text("Boids:   " + flock.length, 10, 40)
-  text("QT Size: " + quadTreeSize, 10, 60)
+  text("QT Size: " + settings.quadTreeSize, 10, 60)
 }
