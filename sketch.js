@@ -30,14 +30,18 @@ function setup() {
 
 function initializeGuiControls() {
   gui = new dat.GUI()
-  gui.add(settings, 'animate');
-  gui.add(settings, 'showDiagnostics');
-  gui.add(settings, 'showQuadtree');
-  gui.add(settings, 'showQuadTester');
-  gui.add(settings, 'showObstacles');
+  var f1 = gui.addFolder('Switches');
+  f1.add(settings, 'animate');
+  f1.add(settings, 'showDiagnostics');
+  f1.add(settings, 'showQuadtree');
+  f1.add(settings, 'showQuadTester');
+  f1.add(settings, 'showObstacles');
+
   gui.add(settings, 'quadTreeSize', 1, 1000);
-  var boidCount = gui.add(settings, 'boidCount', 1, 1000);
-  boidCount.onFinishChange(n => initializeBoids());
+  gui.add(settings, 'boidCount', 1, 1000).onFinishChange(n => initializeBoids());
+
+  f1.open();
+  gui.close();
 }
 
 function initializeBoids() {
@@ -155,8 +159,7 @@ function draw() {
 }
 
 function updateControls() {
-  // Iterate over all controllers
-  for (var i in gui.__controllers) {
+  for (let i in gui.__controllers) {
     gui.__controllers[i].updateDisplay();
   }
 }
@@ -207,14 +210,12 @@ function drawDiagnostics() {
   fill(0);
   stroke(0);
   rectMode(CORNER)
-  rect(5, 5, 100, 60);
+  rect(5, 5, 70, 20);
   
   textSize(12);
   fill(255);
   stroke(0);
 
   let fps = frameRate();
-  text("FPS:     " + fps.toFixed(), 10, 20);
-  text("Boids:   " + flock.length, 10, 40)
-  text("QT Size: " + settings.quadTreeSize, 10, 60)
+  text("FPS:  " + fps.toFixed(), 10, 20);
 }
