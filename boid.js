@@ -203,7 +203,7 @@ class Boid {
     getReducedAreaMatch(qtBoids, searchRadius) {
         let searchArea = new CircleArea(this.position.x, this.position.y, searchRadius);
         let matchedPoints = qtBoids.query(searchArea);
-        let reducedSet = matchedPoints.filter((n, i) => i % this.setReductionFactor === 0);
+        let reducedSet = matchedPoints.filter((n, i) => i % this.setReductionFactor === 1);
         return reducedSet;
     }
 }
