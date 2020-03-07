@@ -4,6 +4,7 @@ let flock = [];
 let animate = true;
 let showDiagnostics = true;
 let showQuadtree = false;
+let showQuadTester = false;
 let quadTreeSize = 32;
 let boidCount = 300;
 
@@ -42,9 +43,13 @@ function keyTyped() {
       break;
 
     case "d": 
-    showDiagnostics = !showDiagnostics;
+      showDiagnostics = !showDiagnostics;
       break;
 
+    case "t": 
+      showQuadTester = !showQuadTester;
+      break;
+    
     case "q": 
       showQuadtree = !showQuadtree;
       break;
@@ -104,6 +109,21 @@ function draw() {
     boid.update(qt);
     boid.draw();
   }
+
+  if (showQuadTester) {
+    noFill();
+    stroke(255);
+    strokeWeight(1);
+    circle(mouseX, mouseY, 200);
+
+    strokeWeight(3);
+    let searchArea = new CircleArea(mouseX, mouseY, 100);
+    let matchedPoints = qt.query(searchArea);
+    
+    for (let match of matchedPoints) {
+      point(match.x, match.y);
+    }
+  }
 }
 
 function adjustRepulsor(boid) {
@@ -130,5 +150,4 @@ function drawDiagnostics() {
   text("FPS:     " + fps.toFixed(), 10, 20);
   text("Boids:   " + flock.length, 10, 40)
   text("QT Size: " + quadTreeSize, 10, 60)
-
 }

@@ -25,14 +25,16 @@ class Boid {
         
         let normalizedHeading = (this.velocity.heading() + PI) / (2 * PI);
         let normalizedSpeed = this.velocity.mag() / this.maxSpeed;
-        fill(100 * normalizedHeading, 50, 75 * normalizedSpeed);
-        stroke(100 * normalizedHeading, 100, 100 * normalizedSpeed);
+        //fill(100 * normalizedHeading, 1, 75 * normalizedSpeed);
+        stroke(100 * normalizedHeading, 100, 100, 100 * normalizedSpeed);
+        //stroke(100 * normalizedHeading, 100, 100 * normalizedSpeed);
+        strokeWeight(3);
 
         // Draw a triangle rotated in the direction of velocity
         translate(this.position.x, this.position.y);
         rotate(this.velocity.heading() - HALF_PI);
         triangle(0, this.size * 2, this.size, -this.size * 2, -this.size, -this.size * 2); 
-        
+
         pop();
     }
 
