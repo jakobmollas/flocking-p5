@@ -36,10 +36,10 @@ class Boid {
         pop();
     }
 
-    update(boids) {
-        let alignment = this.align(boids); 
-        let separation = this.separate(boids);
-        let cohesion = this.cohesion(boids);
+    update(boids, quadtree) {
+        let alignment = this.align(boids, quadtree); 
+        let separation = this.separate(boids, quadtree);
+        let cohesion = this.cohesion(boids, quadtree);
         let repulsion = this.repulse();
         
         let acceleration = createVector();
@@ -81,7 +81,7 @@ class Boid {
         return repulsionForce;
     }
 
-    align(boids) { 
+    align(boids, quadtree) { 
         let perceptionRadius = 200;
         let steeringInfluence = createVector();
         let count = 0;
