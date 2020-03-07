@@ -1,3 +1,5 @@
+'use strict'
+
 const flock = [];
 let animate = true;
 let showFramerate = true;

@@ -10,24 +10,19 @@ class Boid {
     }
 
     draw() {
-        // Draw a triangle rotated in the direction of velocity
-        let theta = this.velocity.heading() + radians(90);
+        push();
+
         colorMode(HSB, 100);
         
         let normalizedHeading = (this.velocity.heading() + PI) / (2 * PI);
         let normalizedSpeed = this.velocity.mag() / this.maxSpeed;
         fill(100 * normalizedHeading, 50, 75 * normalizedSpeed);
         stroke(100 * normalizedHeading, 100, 100 * normalizedSpeed);
-        
-        push();
+
+        // Draw a triangle rotated in the direction of velocity
         translate(this.position.x, this.position.y);
-        
-        beginShape();
-        vertex(0, -this.size * 2);
-        vertex(-this.size, this.size * 2);
-        vertex(this.size, this.size * 2);
-        rotate(theta);
-        endShape(CLOSE);
+        rotate(this.velocity.heading() - HALF_PI);
+        triangle(0, this.size * 2, this.size, -this.size * 2, -this.size, -this.size * 2); 
         
         pop();
     }
@@ -62,9 +57,8 @@ class Boid {
         let count = 0;
 
         for (let boid of boids) {
-            if (boid == this) {
+            if (boid == this)
                 continue;
-            }
 
             let distance = p5.Vector.dist(this.position, boid.position)
             
@@ -100,9 +94,8 @@ class Boid {
         let count = 0;
 
         for (let boid of boids) {
-            if (boid == this) {
+            if (boid == this)
                 continue;
-            }
 
             let distance = p5.Vector.dist(this.position, boid.position);
         
@@ -110,7 +103,7 @@ class Boid {
                 // Calculate vector pointing AWAY from neighbors
                 let diff = p5.Vector.sub(this.position, boid.position);
                 diff.normalize();
-                diff.div(distance);        // Inversely scale with distance, farther away, less influence
+                diff.div(distance); // Inversely scale with distance, farther away, less influence
                 steeringInfluence.add(diff);
                 count++;
             }
@@ -119,7 +112,7 @@ class Boid {
         if (count > 0) {
             steeringInfluence.div(count);
 
-            // Implement Reynolds: Steering = Desired - Velocity
+            // Reynolds: Steering = Desired - Velocity
             steeringInfluence.normalize();
             steeringInfluence.mult(this.maxSpeed);
             steeringInfluence.sub(this.velocity);
@@ -129,39 +122,39 @@ class Boid {
         return steeringInfluence;
     }
 
-    // For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
+    // For the average location (i.e. center) of all nearby boids, 
+    // calculate steering vector towards us
     cohesion(boids) {
         let perceptionRadius = 500;
-        let sum = createVector(0, 0);   // Start with empty vector to accumulate all locations
+        let allLocations = createVector(0, 0);
         let count = 0;
 
         for (let boid of boids) {
-            if (boid == this) {
+            if (boid == this)
                 continue;
-            }
             
             let distance = p5.Vector.dist(this.position, boid.position);
             if (distance < perceptionRadius) {
-                sum.add(boid.position); // Add location
+                allLocations.add(boid.position);
                 count++;
             }
         }
 
         if (count > 0) {
-            sum.div(count);
+            let averageLocation = allLocations.div(count);
 
-            let target = sum;
-            let desired = p5.Vector.sub(target, this.position);  // A vector pointing from the location to the target
-            // Normalize desired and scale to maximum speed
+            // A vector pointing from the average location to us
+            let desired = p5.Vector.sub(averageLocation, this.position);
             desired.normalize();
             desired.mult(this.maxSpeed);
-            // Steering = Desired minus Velocity
-            let steer = p5.Vector.sub(desired, this.velocity);
-            steer.limit(this.maxSteeringForce);  // Limit to maximum steering force
 
-            return steer;
-        } else {
-            return createVector(0, 0);
+            // Steering = Desired minus Velocity
+            let steering = p5.Vector.sub(desired, this.velocity);
+            steering.limit(this.maxSteeringForce);
+
+            return steering;
         }
+        
+        return createVector(0, 0);
     }
 }
