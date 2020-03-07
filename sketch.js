@@ -1,14 +1,25 @@
 'use strict'
 
-const flock = [];
+let flock = [];
 let animate = true;
-let showFramerate = true;
+let showDiagnostics = true;
 let showQuadtree = false;
+let quadTreeSize = 32;
+let boidCount = 300;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  
-  for(let i = 0; i < 250; i++)  {
+  var canvas = createCanvas(windowWidth, windowHeight);
+  canvas.style('display', 'block');
+
+  textFont('monospace');
+
+  initializeBoids();
+}
+
+function initializeBoids() {
+  flock = [];
+
+  for(let i = 0; i < boidCount; i++)  {
     flock.push(new Boid(random(windowWidth), random(windowHeight)));
   }
 }
@@ -20,6 +31,7 @@ function windowResized() {
 function mouseDragged() {
   if (mouseButton === LEFT)
     flock.push(new Boid(mouseX, mouseY));
+    boidCount++;
 }
 
 function keyTyped() {
@@ -29,8 +41,8 @@ function keyTyped() {
       print(animate ? "Running" : "Paused");
       break;
 
-    case "f": 
-      showFramerate = !showFramerate;
+    case "d": 
+    showDiagnostics = !showDiagnostics;
       break;
 
     case "q": 
@@ -43,9 +55,35 @@ function keyTyped() {
   }
 }
 
+function keyPressed() {
+  switch (keyCode) {
+    case RIGHT_ARROW: 
+      if (quadTreeSize < 1024)
+        quadTreeSize *= 2;
+      break;
+
+    case LEFT_ARROW: 
+      if (quadTreeSize > 1)
+        quadTreeSize /= 2;
+      break;
+
+      case UP_ARROW: 
+      boidCount += 50;
+      initializeBoids();
+      break;
+
+    case DOWN_ARROW: 
+      if (boidCount > 50) {
+        boidCount -= 50;
+        initializeBoids();
+      }
+      break;
+  }
+}
+
 function draw() {
-  if (showFramerate)
-    drawFramerate();
+  if (showDiagnostics)
+    drawDiagnostics();
 
   if (!animate)
     return;
@@ -53,7 +91,7 @@ function draw() {
   background(0, 10);
 
   let qtBoundary = new Rectangle(windowWidth / 2, windowHeight / 2, windowWidth / 2, windowHeight / 2);
-  let qt = new QuadTree(qtBoundary, 4);
+  let qt = new QuadTree(qtBoundary, quadTreeSize);
 
   for (let boid of flock)
     qt.insert(boid.position.x, boid.position.y, boid);
@@ -77,16 +115,20 @@ function adjustRepulsor(boid) {
     boid.clearRepulsor();
 }
 
-function drawFramerate() {
+function drawDiagnostics() {
   // Clear background
   fill(0);
   stroke(0);
-  rect(5, 5, 60, 20);
+  rectMode(CORNER)
+  rect(5, 5, 100, 60);
   
   textSize(12);
   fill(255);
   stroke(0);
 
   let fps = frameRate();
-  text("FPS: " + fps.toFixed(), 10, 20);
+  text("FPS:     " + fps.toFixed(), 10, 20);
+  text("Boids:   " + flock.length, 10, 40)
+  text("QT Size: " + quadTreeSize, 10, 60)
+
 }

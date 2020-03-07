@@ -88,23 +88,19 @@ class Boid {
 
     align(qtBoids) { 
         let perceptionRadius = 200;
+        let reductionFactor = 4;
         let steeringInfluence = createVector();
         let count = 0;
 
-        let searchArea = new CircleArea(this.position.x, this.position.y, perceptionRadius);
-        let matchedPoints = qtBoids.query(searchArea);
-
+        let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius, reductionFactor);
+        
         for (let point of matchedPoints) {
             let boid = point.userData;
             if (boid == this)
                 continue;
 
-            let distance = p5.Vector.dist(this.position, boid.position)
-            
-            if (distance < perceptionRadius) {
-                steeringInfluence.add(boid.velocity);
-                count++;
-            }
+            steeringInfluence.add(boid.velocity);
+            count++;
         }
 
         let steering = createVector();
@@ -129,11 +125,11 @@ class Boid {
     // Method checks for nearby boids and steers away
     separate(qtBoids) {
         let perceptionRadius = 25.0;
+        let reductionFactor = 4;
         let steeringInfluence = createVector(0, 0);
         let count = 0;
 
-        let searchArea = new CircleArea(this.position.x, this.position.y, perceptionRadius);
-        let matchedPoints = qtBoids.query(searchArea);
+        let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius, reductionFactor);
 
         for (let point of matchedPoints) {
             let boid = point.userData;
@@ -141,15 +137,11 @@ class Boid {
                 continue;
 
             let distance = p5.Vector.dist(this.position, boid.position);
-        
-            if (distance > 0 && distance < perceptionRadius) {
-                // Calculate vector pointing AWAY from neighbors
-                let diff = p5.Vector.sub(this.position, boid.position);
-                diff.normalize();
-                diff.div(distance); // Inversely scale with distance, farther away, less influence
-                steeringInfluence.add(diff);
-                count++;
-            }
+            let diff = p5.Vector.sub(this.position, boid.position);
+            diff.normalize();
+            diff.div(distance); // Inversely scale with distance, farther away, less influence
+            steeringInfluence.add(diff);
+            count++;
         }
 
         if (count > 0) {
@@ -168,23 +160,20 @@ class Boid {
     // For the average location (i.e. center) of all nearby boids, 
     // calculate steering vector towards us
     cohesion(qtBoids) {
-        let perceptionRadius = 500;
+        let perceptionRadius = 400;
+        let reductionFactor = 4;
         let allLocations = createVector(0, 0);
         let count = 0;
 
-        let searchArea = new CircleArea(this.position.x, this.position.y, perceptionRadius);
-        let matchedPoints = qtBoids.query(searchArea);
-
+        let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius, reductionFactor);
+        
         for (let point of matchedPoints) {
             let boid = point.userData;
             if (boid == this)
                 continue;
             
-            let distance = p5.Vector.dist(this.position, boid.position);
-            if (distance < perceptionRadius) {
-                allLocations.add(boid.position);
-                count++;
-            }
+            allLocations.add(boid.position);
+            count++;
         }
 
         if (count > 0) {
@@ -203,5 +192,12 @@ class Boid {
         }
         
         return createVector(0, 0);
+    }
+
+    getReducedAreaMatch(qtBoids, searchRadius, takeOneInEvery) {
+        let searchArea = new CircleArea(this.position.x, this.position.y, searchRadius);
+        let matchedPoints = qtBoids.query(searchArea);
+        let reducedSet = matchedPoints.filter((n, i) => i % takeOneInEvery === 1);
+        return reducedSet;
     }
 }

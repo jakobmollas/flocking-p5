@@ -79,8 +79,8 @@ class QuadTree {
     draw() {
         stroke(255);
         noFill();
-        rectMode(CENTER);
-        rect(this.boundary.x, this.boundary.y, this.boundary.w * 2, this.boundary.h * 2);
+        rectMode(RADIUS);
+        rect(this.boundary.x, this.boundary.y, this.boundary.w, this.boundary.h);
         if (this.isDivided) {
             this.northEast.draw();
             this.northWest.draw();
