@@ -56,14 +56,14 @@ function draw() {
   let qt = new QuadTree(qtBoundary, 4);
 
   for (let boid of flock)
-    qt.insert(boid.position.x, boid.position.y);
+    qt.insert(boid.position.x, boid.position.y, boid);
 
   if (showQuadtree)
     qt.draw();
 
   for (let boid of flock) {
     adjustRepulsor(boid);
-    boid.update(flock, qt);
+    boid.update(qt);
     boid.draw();
   }
 }

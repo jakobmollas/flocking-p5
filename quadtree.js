@@ -1,9 +1,10 @@
 'use strict'
 
 class Point {
-    constructor(x, y) {
+    constructor(x, y, userData) {
         this.x = x;
         this.y = y;
+        this.userData = userData;
     }
 }
 
@@ -20,6 +21,45 @@ class Rectangle {
             x <= this.x + this.w && 
             y >= this.y - this.h && 
             y <= this.y + this.h);
+    }
+}
+
+class CircleArea {
+    constructor(x, y, r) {
+        this.x = x;
+        this.y = y;
+        this.r = r;
+        this.rSquared = this.r * this.r;
+    }
+
+    contains(x, y) {
+        //Check if distance between point and center of circle is smaller that circle radius
+        let distance = Math.pow(x - this.x, 2) + Math.pow(y - this.y, 2);
+        return distance <= this.rSquared;
+    }
+    
+    intersects(rectangleArea) {
+        var xDist = Math.abs(rectangleArea.x - this.x);
+        var yDist = Math.abs(rectangleArea.y - this.y);
+    
+        // radius of the circle
+        var r = this.r;
+    
+        var w = rectangleArea.w;
+        var h = rectangleArea.h;
+    
+        var edges = Math.pow(xDist - w, 2) + Math.pow(yDist - h, 2);
+    
+        // no intersection
+        if (xDist > r + w || yDist > r + h) 
+            return false;
+    
+        // intersection within the circle
+        if (xDist <= w || yDist <= h) 
+            return true;
+    
+        // intersection on the edge of the circle
+        return edges <= this.rSquared;
     }
 }
 
@@ -49,12 +89,12 @@ class QuadTree {
         }
     }
 
-    insert(x, y) {
+    insert(x, y, userData) {
         if (!this.boundary.contains(x, y))
             return false;
 
         if (this.points.length < this.capacity) {
-            this.points.push(new Point(x, y));
+            this.points.push(new Point(x, y, userData));
             return true;
         }
 
@@ -63,10 +103,32 @@ class QuadTree {
             this.isDivided = true;
         }
 
-        return this.northEast.insert(x, y) || 
-            this.northWest.insert(x, y) || 
-            this.southEast.insert(x, y) || 
-            this.southWest.insert(x, y);
+        return this.northEast.insert(x, y, userData) || 
+            this.northWest.insert(x, y, userData) || 
+            this.southEast.insert(x, y, userData) || 
+            this.southWest.insert(x, y, userData);
+    }
+
+    query(circleArea, matchedPoints) {
+        if (!matchedPoints)
+            matchedPoints = [];
+
+        if (!circleArea.intersects(this.boundary))
+            return matchedPoints;
+
+        for (let point of this.points) {
+            if (circleArea.contains(point.x, point.y))
+                matchedPoints.push(point);
+        }
+
+        if (this.isDivided) {
+            this.northEast.query(circleArea, matchedPoints);
+            this.northWest.query(circleArea, matchedPoints);
+            this.southEast.query(circleArea, matchedPoints);
+            this.southWest.query(circleArea, matchedPoints);
+        }
+
+        return matchedPoints;
     }
 
     subdivide() {

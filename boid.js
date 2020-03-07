@@ -36,10 +36,10 @@ class Boid {
         pop();
     }
 
-    update(boids, quadtree) {
-        let alignment = this.align(boids, quadtree); 
-        let separation = this.separate(boids, quadtree);
-        let cohesion = this.cohesion(boids, quadtree);
+    update(qtBoids) {
+        let alignment = this.align(qtBoids); 
+        let separation = this.separate(qtBoids);
+        let cohesion = this.cohesion(qtBoids);
         let repulsion = this.repulse();
         
         let acceleration = createVector();
@@ -56,10 +56,15 @@ class Boid {
     }
 
     wraparoundIfNeeded() {
-        if (this.position.x < -this.size) this.position.x = width + this.size;
-        if (this.position.y < -this.size) this.position.y = height + this.size;
-        if (this.position.x > width + this.size) this.position.x = -this.size;
-        if (this.position.y > height + this.size) this.position.y = -this.size;
+        if (this.position.x < -this.size) 
+            this.position.x = width + this.size;
+        else if (this.position.x > width + this.size) 
+            this.position.x = -this.size;
+        
+        if (this.position.y < -this.size) 
+            this.position.y = height + this.size;
+        else if (this.position.y > height + this.size) 
+            this.position.y = -this.size;
     }
 
     repulse() {
@@ -81,12 +86,16 @@ class Boid {
         return repulsionForce;
     }
 
-    align(boids, quadtree) { 
+    align(qtBoids) { 
         let perceptionRadius = 200;
         let steeringInfluence = createVector();
         let count = 0;
 
-        for (let boid of boids) {
+        let searchArea = new CircleArea(this.position.x, this.position.y, perceptionRadius);
+        let matchedPoints = qtBoids.query(searchArea);
+
+        for (let point of matchedPoints) {
+            let boid = point.userData;
             if (boid == this)
                 continue;
 
@@ -118,12 +127,16 @@ class Boid {
     }
 
     // Method checks for nearby boids and steers away
-    separate(boids) {
+    separate(qtBoids) {
         let perceptionRadius = 25.0;
         let steeringInfluence = createVector(0, 0);
         let count = 0;
 
-        for (let boid of boids) {
+        let searchArea = new CircleArea(this.position.x, this.position.y, perceptionRadius);
+        let matchedPoints = qtBoids.query(searchArea);
+
+        for (let point of matchedPoints) {
+            let boid = point.userData;
             if (boid == this)
                 continue;
 
@@ -154,12 +167,16 @@ class Boid {
 
     // For the average location (i.e. center) of all nearby boids, 
     // calculate steering vector towards us
-    cohesion(boids) {
+    cohesion(qtBoids) {
         let perceptionRadius = 500;
         let allLocations = createVector(0, 0);
         let count = 0;
 
-        for (let boid of boids) {
+        let searchArea = new CircleArea(this.position.x, this.position.y, perceptionRadius);
+        let matchedPoints = qtBoids.query(searchArea);
+
+        for (let point of matchedPoints) {
+            let boid = point.userData;
             if (boid == this)
                 continue;
             
