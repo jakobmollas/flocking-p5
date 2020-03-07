@@ -5,7 +5,7 @@ class Boid {
         this.velocity = createVector(random(-1, 1), random(-1, 1));
         this.position = createVector(x, y);
         this.size = 3.0;
-        this.maxSpeed = random(2, 5);
+        this.maxSpeed = random(2, 7);
         this.maxSteeringForce = random(0.02, 0.40);
     }
 
@@ -13,16 +13,22 @@ class Boid {
         // Draw a triangle rotated in the direction of velocity
         let theta = this.velocity.heading() + radians(90);
         colorMode(HSB, 100);
+        
         let normalizedHeading = (this.velocity.heading() + PI) / (2 * PI);
-        stroke(100 * normalizedHeading, 100, 100);
+        let normalizedSpeed = this.velocity.mag() / this.maxSpeed;
+        fill(100 * normalizedHeading, 50, 75 * normalizedSpeed);
+        stroke(100 * normalizedHeading, 100, 100 * normalizedSpeed);
+        
         push();
         translate(this.position.x, this.position.y);
+        
         beginShape();
         vertex(0, -this.size * 2);
         vertex(-this.size, this.size * 2);
         vertex(this.size, this.size * 2);
         rotate(theta);
         endShape(CLOSE);
+        
         pop();
     }
 
@@ -51,7 +57,7 @@ class Boid {
     }
 
     align(boids) { 
-        let perceptionRadius = 50;
+        let perceptionRadius = 200;
         let steeringInfluence = createVector();
         let count = 0;
 
@@ -125,7 +131,7 @@ class Boid {
 
     // For the average location (i.e. center) of all nearby boids, calculate steering vector towards that location
     cohesion(boids) {
-        let perceptionRadius = 50;
+        let perceptionRadius = 500;
         let sum = createVector(0, 0);   // Start with empty vector to accumulate all locations
         let count = 0;
 

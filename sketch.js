@@ -1,6 +1,6 @@
-//@ts-check
-
 const flock = [];
+let animate = true;
+let showFramerate = true;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -14,16 +14,52 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
 
-// Add a new boid into the System
 function mouseDragged() {
   flock.push(new Boid(mouseX, mouseY));
 }
 
+function keyTyped() {
+  switch (key) {
+    case "a": 
+      animate = !animate;
+      print(animate ? "Running" : "Paused");
+      break;
+
+    case "f": 
+      showFramerate = !showFramerate;
+      break;
+
+    default:
+      // Prevent default behavior
+      return false;
+  }
+}
+
 function draw() {
-  background(0, 20);
+  if (showFramerate)
+    drawFramerate();
+
+  if (!animate)
+    return;
+
+  background(0, 10);
 
   for (let boid of flock) {
     boid.update(flock);
     boid.draw();
   }
+}
+
+function drawFramerate() {
+  // Clear background
+  fill(0);
+  stroke(0);
+  rect(5, 5, 60, 20);
+  
+  textSize(12);
+  fill(255);
+  stroke(0);
+
+  let fps = frameRate();
+  text("FPS: " + fps.toFixed(), 10, 20);
 }
