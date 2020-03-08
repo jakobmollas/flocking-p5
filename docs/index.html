@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Flocking in P5</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.0.0/lib/p5.min.js"></script>
+  <script src="..\dist\dat.gui.min.js"></script>
+
+  <script src="boid.js"></script>
+  <script src="obstacle.js"></script>
+  <script src="sketch.js"></script>
+  <script src="quadtree.js"></script>
+
+  <style>
+    body {
+      margin: 0px;  /* Get rid of extra margins around canvas/document */
+    }
+  </style>
+</head>
+
+<!-- Prevent context menus since we use right-click/drag for some operations -->
+<body oncontextmenu="return false;"></body>
+
+</html>
