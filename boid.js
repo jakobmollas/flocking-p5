@@ -16,7 +16,7 @@ class Boid {
 
         noSmooth();
         colorMode(HSB, 100);
-        
+
         let normalizedHeading = (this.velocity.heading() + PI) / (2 * PI);
         let normalizedSpeed = this.velocity.mag() / this.maxSpeed;
         fill(100 * normalizedHeading, 0, 100 * normalizedSpeed);
@@ -27,13 +27,13 @@ class Boid {
         // Draw a triangle rotated in the direction of velocity
         translate(this.position.x, this.position.y);
         rotate(this.velocity.heading() - HALF_PI);
-        triangle(0, this.size * 2, this.size, -this.size * 2, -this.size, -this.size * 2); 
+        triangle(0, this.size * 2, this.size, -this.size * 2, -this.size, -this.size * 2);
 
         pop();
     }
 
     update(qtBoids, obstacles) {
-        let alignment = this.align(qtBoids); 
+        let alignment = this.align(qtBoids);
         let separation = this.separate(qtBoids);
         let cohesion = this.cohesion(qtBoids);
         let avoidance = this.avoidObstacles(obstacles);
@@ -52,14 +52,14 @@ class Boid {
     }
 
     wraparoundIfNeeded() {
-        if (this.position.x < -this.size) 
+        if (this.position.x < -this.size)
             this.position.x = width + this.size;
-        else if (this.position.x > width + this.size) 
+        else if (this.position.x > width + this.size)
             this.position.x = -this.size;
-        
-        if (this.position.y < -this.size) 
+
+        if (this.position.y < -this.size)
             this.position.y = height + this.size;
-        else if (this.position.y > height + this.size) 
+        else if (this.position.y > height + this.size)
             this.position.y = -this.size;
     }
 
@@ -72,9 +72,9 @@ class Boid {
 
         for (var obstacle of obstacles) {
             let distanceToObstacle = p5.Vector.dist(this.position, obstacle.position)
-            if (distanceToObstacle <= 0 || distanceToObstacle > obstacle.radius) 
+            if (distanceToObstacle <= 0 || distanceToObstacle > obstacle.radius)
                 continue;
-            
+
             let repulsionForce = p5.Vector.sub(this.position, obstacle.position);
             repulsionForce.normalize();
             repulsionForce.div(distanceToObstacle); // Inversely scale with distance
@@ -95,13 +95,13 @@ class Boid {
         return steeringInfluence;
     }
 
-    align(qtBoids) { 
+    align(qtBoids) {
         let perceptionRadius = 200;
         let steeringInfluence = createVector();
         let count = 0;
 
         let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius);
-        
+
         for (let point of matchedPoints) {
             let boid = point.userData;
             if (boid == this)
@@ -115,7 +115,7 @@ class Boid {
 
         if (count > 0) {
             // Calculate average
-            steeringInfluence.div(count); 
+            steeringInfluence.div(count);
             steeringInfluence.normalize();
             // Scale
             steeringInfluence.mult(this.maxSpeed);
@@ -172,12 +172,12 @@ class Boid {
         let count = 0;
 
         let matchedPoints = this.getReducedAreaMatch(qtBoids, perceptionRadius);
-        
+
         for (let point of matchedPoints) {
             let boid = point.userData;
             if (boid == this)
                 continue;
-            
+
             allLocations.add(boid.position);
             count++;
         }
@@ -196,7 +196,7 @@ class Boid {
 
             return steering;
         }
-        
+
         return createVector(0, 0);
     }
 

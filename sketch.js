@@ -18,7 +18,7 @@ let gui = null;
 let settings = new Settings();
 
 function setup() {
-  var canvas = createCanvas(windowWidth, windowHeight);
+  let canvas = createCanvas(windowWidth, windowHeight);
   canvas.style('display', 'block');
 
   textFont('monospace');
@@ -46,8 +46,8 @@ function initializeGuiControls() {
 
 function initializeBoids() {
   flock = [];
-  
-  for(let i = 0; i < settings.boidCount; i++)  {
+
+  for (let i = 0; i < settings.boidCount; i++) {
     flock.push(new Boid(random(windowWidth), random(windowHeight)));
   }
 }
@@ -71,27 +71,27 @@ function mouseDragged() {
 
 function keyTyped() {
   switch (key) {
-    case "a": 
+    case "a":
       settings.animate = !settings.animate;
       break;
 
-    case "d": 
+    case "d":
       settings.showDiagnostics = !settings.showDiagnostics;
       break;
 
-    case "o": 
+    case "o":
       settings.showObstacles = !settings.showObstacles;
       break;
 
-    case "t": 
+    case "t":
       settings.showQuadTester = !settings.showQuadTester;
       break;
-    
-    case "q": 
+
+    case "q":
       settings.showQuadtree = !settings.showQuadtree;
       break;
 
-    case "h": 
+    case "h":
       gui.closed ? gui.open() : gui.close();
       break;
 
@@ -103,22 +103,22 @@ function keyTyped() {
 
 function keyPressed() {
   switch (keyCode) {
-    case RIGHT_ARROW: 
+    case RIGHT_ARROW:
       if (settings.quadTreeSize < 1024)
         settings.quadTreeSize *= 2;
       break;
 
-    case LEFT_ARROW: 
+    case LEFT_ARROW:
       if (settings.quadTreeSize > 1)
         settings.quadTreeSize /= 2;
       break;
 
-      case UP_ARROW: 
+    case UP_ARROW:
       settings.boidCount += 50;
       initializeBoids();
       break;
 
-    case DOWN_ARROW: 
+    case DOWN_ARROW:
       if (settings.boidCount > 50) {
         settings.boidCount -= 50;
         initializeBoids();
@@ -148,20 +148,19 @@ function draw() {
 
   if (settings.showObstacles)
     drawObstacles();
-  
+
   for (let boid of flock) {
     boid.update(quadTree, obstacles);
     boid.draw();
   }
 
-  if (settings.showQuadTester) 
+  if (settings.showQuadTester)
     drawQuadTester(quadTree);
 }
 
 function updateControls() {
-  for (let i in gui.__controllers) {
+  for (let i in gui.__controllers)
     gui.__controllers[i].updateDisplay();
-  }
 }
 
 function createBoidQuadTree(boids) {
@@ -183,21 +182,21 @@ function drawQuadTester(quadTree) {
   strokeWeight(10);
   let searchArea = new CircleArea(mouseX, mouseY, 100);
   let matchedPoints = quadTree.query(searchArea);
-  
+
   for (let match of matchedPoints) {
     point(match.x, match.y);
   }
 }
 
 function updateObstacles() {
-    let rightMousePressed = mouseIsPressed && mouseButton === RIGHT;
-    if (rightMousePressed) {
-      obstacles[0].position.x = mouseX;
-      obstacles[0].position.y = mouseY;
-    }
+  let rightMousePressed = mouseIsPressed && mouseButton === RIGHT;
+  if (rightMousePressed) {
+    obstacles[0].position.x = mouseX;
+    obstacles[0].position.y = mouseY;
+  }
 
-    for (let obstacle of obstacles)
-      obstacle.update();
+  for (let obstacle of obstacles)
+    obstacle.update();
 }
 
 function drawObstacles() {
@@ -211,7 +210,7 @@ function drawDiagnostics() {
   stroke(0);
   rectMode(CORNER)
   rect(5, 5, 70, 20);
-  
+
   textSize(12);
   fill(255);
   stroke(0);
