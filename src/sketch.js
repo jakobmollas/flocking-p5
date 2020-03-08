@@ -134,8 +134,8 @@ function draw() {
   if (settings.showDiagnostics)
     drawDiagnostics();
 
-  if (!settings.animate)
-    return;
+  // if (!settings.animate)
+  //   return;
 
   // Fade background to black
   background(0, 20);
@@ -150,7 +150,9 @@ function draw() {
     drawObstacles();
 
   for (let boid of flock) {
-    boid.update(quadTree, obstacles);
+    if (settings.animate)
+        boid.update(quadTree, obstacles);
+
     boid.draw();
   }
 
@@ -181,7 +183,7 @@ function drawQuadTester(quadTree) {
 
   strokeWeight(10);
   let searchArea = new CircleArea(mouseX, mouseY, 100);
-  let matchedPoints = quadTree.query(searchArea);
+  let matchedPoints = quadTree.query(searchArea, null);
 
   for (let match of matchedPoints) {
     point(match.x, match.y);
@@ -209,7 +211,7 @@ function drawDiagnostics() {
   fill(0);
   stroke(0);
   rectMode(CORNER)
-  rect(5, 5, 70, 20);
+  rect(5, 5, 80, 40);
 
   textSize(12);
   fill(255);
@@ -217,4 +219,5 @@ function drawDiagnostics() {
 
   let fps = frameRate();
   text("FPS:  " + fps.toFixed(), 10, 20);
+  text("Boid: " + flock.length.toFixed(), 10, 40);
 }

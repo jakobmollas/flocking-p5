@@ -42,13 +42,9 @@ class CircleArea {
         var xDist = Math.abs(rectangleArea.x - this.x);
         var yDist = Math.abs(rectangleArea.y - this.y);
 
-        // radius of the circle
         var r = this.r;
-
         var w = rectangleArea.w;
         var h = rectangleArea.h;
-
-        var edges = Math.pow(xDist - w, 2) + Math.pow(yDist - h, 2);
 
         // no intersection
         if (xDist > r + w || yDist > r + h)
@@ -57,6 +53,8 @@ class CircleArea {
         // intersection within the circle
         if (xDist <= w || yDist <= h)
             return true;
+
+        var edges = Math.pow(xDist - w, 2) + Math.pow(yDist - h, 2);
 
         // intersection on the edge of the circle
         return edges <= this.rSquared;
@@ -117,6 +115,9 @@ class QuadTree {
     query(circleArea, matchedPoints) {
         if (!matchedPoints)
             matchedPoints = [];
+
+        if (!this.isDivided && this.points.length === 0)
+            return matchedPoints;
 
         if (!circleArea.intersects(this.boundary))
             return matchedPoints;
