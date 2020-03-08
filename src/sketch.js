@@ -30,7 +30,7 @@ function setup() {
 
 function initializeGuiControls() {
   gui = new dat.GUI()
-  var f1 = gui.addFolder('Switches');
+  let f1 = gui.addFolder('Switches');
   f1.add(settings, 'animate');
   f1.add(settings, 'showDiagnostics');
   f1.add(settings, 'showQuadtree');
