@@ -4,9 +4,9 @@ class Boid {
     constructor(x, y) {
         this.velocity = createVector(random(-1, 1), random(-1, 1));
         this.position = createVector(x, y);
-        this.size = 3.0;
+        this.size = 3.5;
         this.maxSpeed = random(2, 7);
-        this.maxSteeringForce = random(0.02, 0.40);
+        this.maxSteeringForce = random(0.02, 0.20);
         this.maxObstacleForce = 0.25;
         this.setReductionFactor = 4;
     }
@@ -20,9 +20,8 @@ class Boid {
         let normalizedHeading = (this.velocity.heading() + PI) / (2 * PI);
         let normalizedSpeed = this.velocity.mag() / this.maxSpeed;
         fill(100 * normalizedHeading, 0, 100 * normalizedSpeed);
-        stroke(100 * normalizedHeading, 100, 100, 100 * normalizedSpeed);
-        //stroke(100 * normalizedHeading, 100, 100 * normalizedSpeed);
-        strokeWeight(2.5);
+        stroke(100 * normalizedHeading, 100, 100 * normalizedSpeed + 25);
+        strokeWeight(2);
 
         // Draw a triangle rotated in the direction of velocity
         translate(this.position.x, this.position.y);
@@ -132,7 +131,7 @@ class Boid {
 
     // Method checks for nearby boids and steers away
     separate(qtBoids) {
-        let perceptionRadius = 25.0;
+        let perceptionRadius = 50.0;
         let steeringInfluence = createVector(0, 0);
         let count = 0;
 
@@ -167,7 +166,7 @@ class Boid {
     // For the average location (i.e. center) of all nearby boids, 
     // calculate steering vector towards us
     cohesion(qtBoids) {
-        let perceptionRadius = 400;
+        let perceptionRadius = 200;
         let allLocations = createVector(0, 0);
         let count = 0;
 

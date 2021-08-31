@@ -4,6 +4,7 @@ class Settings {
   constructor() {
     this.animate = true;
     this.showDiagnostics = true;
+    this.obstacles = true;
     this.showQuadtree = false;
     this.showQuadTester = false;
     this.showObstacles = false;
@@ -34,6 +35,7 @@ function initializeGuiControls() {
   f1.add(settings, 'animate');
   f1.add(settings, 'showDiagnostics');
   f1.add(settings, 'showQuadtree');
+  f1.add(settings, 'obstacles');
   f1.add(settings, 'showQuadTester');
   f1.add(settings, 'showObstacles');
 
@@ -54,8 +56,10 @@ function initializeBoids() {
 
 function initializeObstacles() {
   obstacles = [];
-  obstacles.push(new Obstacle(random(windowWidth), random(windowHeight), random(200, 500)));
-  obstacles.push(new Obstacle(random(windowWidth), random(windowHeight), random(200, 500)));
+  const minSize = (windowWidth + windowHeight) / 20;
+  const maxSize = (windowWidth + windowHeight) / 10;
+  obstacles.push(new Obstacle(random(windowWidth), random(windowHeight), random(minSize, maxSize)));
+  obstacles.push(new Obstacle(random(windowWidth), random(windowHeight), random(minSize, maxSize)));
 }
 
 function windowResized() {
@@ -138,7 +142,7 @@ function draw() {
   //   return;
 
   // Fade background to black
-  background(0, 20);
+  background(0, 70);
 
   let quadTree = createBoidQuadTree(flock);
   updateObstacles();
@@ -151,7 +155,7 @@ function draw() {
 
   for (let boid of flock) {
     if (settings.animate)
-        boid.update(quadTree, obstacles);
+      boid.update(quadTree, settings.obstacles ? obstacles : []);
 
     boid.draw();
   }
@@ -202,6 +206,9 @@ function updateObstacles() {
 }
 
 function drawObstacles() {
+  if (!settings.obstacles)
+    return;
+
   for (let obstacle of obstacles)
     obstacle.draw();
 }
